@@ -5,6 +5,8 @@ import { RecipeService } from '../recipes/recipe.service';
 import { exhaustMap, map, take, tap } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 
+const BASEURL = 'https://angular-recipebook-c5102.firebaseio.com/recipes.json';
+
 @Injectable({ providedIn: 'root' })
 export class DataStorageService {
   constructor(
@@ -15,34 +17,25 @@ export class DataStorageService {
 
   storeRecipes() {
     const recipes = this.recipeService.getRecipes();
-    this.http
-      .put(
-        'https://angular-recipebook-c5102.firebaseio.com/recipes.json',
-        recipes
-      )
-      .subscribe((response) => {
-        console.log(response);
-      });
+    this.http.put(BASEURL, recipes).subscribe((response) => {
+      console.log(response);
+    });
   }
 
   fetchRecipes() {
-    return this.http
-      .get<Recipe[]>(
-        'https://angular-recipebook-c5102.firebaseio.com/recipes.json'
-      )
-      .pipe(
-        map((recipes) => {
-          return recipes.map((recipe) => {
-            return {
-              ...recipe,
-              ingredients: recipe.ingredients ? recipe.ingredients : [],
-            };
-          });
-        }),
-        tap((recipes) => {
-          console.log(recipes);
-          this.recipeService.setRecipes(recipes);
-        })
-      );
+    return this.http.get<Recipe[]>(BASEURL).pipe(
+      map((recipes) => {
+        return recipes.map((recipe) => {
+          return {
+            ...recipe,
+            ingredients: recipe.ingredients ? recipe.ingredients : [],
+          };
+        });
+      }),
+      tap((recipes) => {
+        console.log(recipes);
+        this.recipeService.setRecipes(recipes);
+      })
+    );
   }
 }
